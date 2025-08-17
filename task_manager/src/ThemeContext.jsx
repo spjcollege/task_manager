@@ -1,26 +1,32 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext } from "react";
+import useLocalStorage from "./hooks/useLocalStorage";
 
 export const ThemeContext = createContext();
 
-export default function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("light");
+const ThemeProvider = ({ children }) => {
+  // ✅ Persist theme in localStorage
+  const [theme, setTheme] = useLocalStorage("theme", "light");
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-  }, []);
-
+  // Toggle function
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    setTheme(theme === "light" ? "dark" : "light");
   };
+
+  // ✅ Apply Tailwind dark mode class to <html>
+  React.useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div className={theme === "dark" ? "dark bg-gray-900 text-white min-h-screen" : "bg-white min-h-screen"}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
-}
+};
+
+export default ThemeProvider;
