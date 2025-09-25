@@ -21,65 +21,98 @@ export default function App() {
 
   const [teams, setTeams] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
 
   const [teamName, setTeamName] = useState("");
   const [teamMembers, setTeamMembers] = useState("");
   const [taskName, setTaskName] = useState("");
 
-  // Fetch teams and tasks on mount
   useEffect(() => {
     async function loadData() {
-      setTeams(await fetchTeams());
-      setTasks(await fetchTasks());
+      try {
+        setTeams(await fetchTeams());
+        setTasks(await fetchTasks());
+      } catch (err) {
+        setError("Failed to load data.");
+      }
     }
     loadData();
   }, []);
 
-  // Add team
   async function handleAddTeam() {
-    if (!teamName.trim() || !teamMembers.trim()) return;
-    const membersArray = teamMembers.split(",").map((m) => m.trim());
-    const newTeam = await createTeam({ name: teamName, members: membersArray });
-    setTeams([...teams, newTeam]);
-    setTeamName("");
-    setTeamMembers("");
+    if (!teamName.trim() || !teamMembers.trim()) {
+      setError("Please enter both team name and members.");
+      return;
+    }
+    try {
+      const membersArray = teamMembers.split(",").map((m) => m.trim()).filter(Boolean);
+      const newTeam = await createTeam({ name: teamName, members: membersArray });
+      setTeams([...teams, newTeam]);
+      setTeamName("");
+      setTeamMembers("");
+      setError(null);
+    } catch (err) {
+      setError("Failed to add team.");
+    }
   }
 
-  // Update team (e.g. add/delete members)
   async function handleUpdateTeam(updatedTeam) {
-    const savedTeam = await updateTeam(updatedTeam._id, updatedTeam);
-    setTeams(teams.map(t => t._id === savedTeam._id ? savedTeam : t));
+    try {
+      const savedTeam = await updateTeam(updatedTeam._id, updatedTeam);
+      setTeams(teams.map(t => t._id === savedTeam._id ? savedTeam : t));
+      setError(null);
+    } catch {
+      setError("Failed to update team.");
+    }
   }
 
-  // Delete team
   async function handleDeleteTeam(id) {
-    await deleteTeam(id);
-    setTeams(teams.filter(t => t._id !== id));
+    try {
+      await deleteTeam(id);
+      setTeams(teams.filter(t => t._id !== id));
+      setError(null);
+    } catch {
+      setError("Failed to delete team.");
+    }
   }
 
-  // Add task
   async function handleAddTask() {
-    if (!taskName.trim()) return;
-    const newTask = await createTask({ task: taskName, done: false, team: null });
-    setTasks([...tasks, newTask]);
-    setTaskName("");
+    if (!taskName.trim()) {
+      setError("Please enter a task name.");
+      return;
+    }
+    try {
+      const newTask = await createTask({ task: taskName, done: false, team: null });
+      setTasks([...tasks, newTask]);
+      setTaskName("");
+      setError(null);
+    } catch {
+      setError("Failed to add task.");
+    }
   }
 
-  // Update task (mark done, assign team)
   async function handleUpdateTask(updatedTask) {
-    const savedTask = await updateTask(updatedTask._id, updatedTask);
-    setTasks(tasks.map(t => t._id === savedTask._id ? savedTask : t));
+    try {
+      const savedTask = await updateTask(updatedTask._id, updatedTask);
+      setTasks(tasks.map(t => t._id === savedTask._id ? savedTask : t));
+      setError(null);
+    } catch {
+      setError("Failed to update task.");
+    }
   }
 
-  // Delete task
   async function handleDeleteTask(id) {
-    await deleteTask(id);
-    setTasks(tasks.filter(t => t._id !== id));
+    try {
+      await deleteTask(id);
+      setTasks(tasks.filter(t => t._id !== id));
+      setError(null);
+    } catch {
+      setError("Failed to delete task.");
+    }
   }
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-700`}>
-      {/* Header */}
       <div className="flex justify-between items-center px-6 py-4">
         <h1 className="text-4xl font-extrabold text-indigo-700 dark:text-indigo-300 drop-shadow-md transition-colors duration-700">
           🌟 Collaboration App
@@ -99,7 +132,12 @@ export default function App() {
         </label>
       </div>
 
-      {/* Forms */}
+      {error && (
+        <div className="max-w-2xl mx-auto my-4 p-4 bg-red-100 text-red-800 rounded-lg text-center">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-6xl mx-auto px-6 mt-6">
         <TeamForm
           teamName={teamName}
@@ -115,7 +153,6 @@ export default function App() {
         />
       </div>
 
-      {/* Task Table */}
       <TasksTable
         tasks={tasks}
         setTasks={setTasks}
@@ -124,7 +161,6 @@ export default function App() {
         onDeleteTask={handleDeleteTask}
       />
 
-      {/* Teams List */}
       <TeamsList
         teams={teams}
         setTeams={setTeams}

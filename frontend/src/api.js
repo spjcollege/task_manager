@@ -1,9 +1,13 @@
-const API_BASE = 'http://localhost:5000/api';  // Change port if needed
+const API_BASE = 'http://localhost:5000/api';
 
-// Teams APIs
 export async function fetchTeams() {
-  const response = await fetch(`${API_BASE}/teams`);
-  return response.json();
+  try {
+    const response = await fetch(`${API_BASE}/teams`);
+    if (!response.ok) throw new Error("Failed to fetch teams");
+    return await response.json();
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function createTeam(team) {
@@ -12,7 +16,8 @@ export async function createTeam(team) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(team),
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to create team");
+  return await response.json();
 }
 
 export async function updateTeam(id, data) {
@@ -21,20 +26,26 @@ export async function updateTeam(id, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to update team");
+  return await response.json();
 }
 
 export async function deleteTeam(id) {
   const response = await fetch(`${API_BASE}/teams/${id}`, {
     method: 'DELETE',
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to delete team");
+  return await response.json();
 }
 
-// Tasks APIs
 export async function fetchTasks() {
-  const response = await fetch(`${API_BASE}/tasks`);
-  return response.json();
+  try {
+    const response = await fetch(`${API_BASE}/tasks`);
+    if (!response.ok) throw new Error("Failed to fetch tasks");
+    return await response.json();
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function createTask(task) {
@@ -43,7 +54,8 @@ export async function createTask(task) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to create task");
+  return await response.json();
 }
 
 export async function updateTask(id, data) {
@@ -52,12 +64,14 @@ export async function updateTask(id, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to update task");
+  return await response.json();
 }
 
 export async function deleteTask(id) {
   const response = await fetch(`${API_BASE}/tasks/${id}`, {
     method: 'DELETE',
   });
-  return response.json();
+  if (!response.ok) throw new Error("Failed to delete task");
+  return await response.json();
 }
